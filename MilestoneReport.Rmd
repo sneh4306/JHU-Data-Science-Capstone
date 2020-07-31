@@ -1,0 +1,174 @@
+---
+title: "Text Mining"
+author: "Sneh Bindesh Chitalia"
+date: "08/07/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load The data
+```{r}
+blogs<-data.table::fread("final/en_US/en_US.blogs.txt",header=FALSE,sep="\n")
+news<-data.table::fread("final/en_US/en_US.news.txt",header=FALSE,sep="\n")
+tweets<-data.table::fread("final/en_US/en_US.twitter.txt",header=FALSE,sep="\n")
+```
+
+## Number of lines and Number of words in each document:  
+1. Blogs Data
+```{r}
+# Number of lines
+dim(blogs)[1]
+
+# Number of Words
+blogs_words <- sapply(blogs$V1,function(x) length(unlist(strsplit(as.character(x), "\\W+"))))
+sum(blogs_words)
+```
+
+2. News Data
+```{r}
+# Number of lines
+dim(news)[1]
+
+# Number of Words
+news_words <- sapply(news$V1,function(x) length(unlist(strsplit(as.character(x), "\\W+"))))
+sum(news_words)
+```
+
+3. Twitter Data
+```{r}
+# Number of lines
+dim(tweets)[1]
+
+# Number of Words
+tweets_words <- sapply(tweets$V1,function(x) length(unlist(strsplit(as.character(x), "\\W+"))))
+sum(tweets_words)
+```
+
+## Sampling the Loaded Data
+```{r}
+set.seed(1001)
+library(dplyr)
+blogs_sample<-blogs %>% sample_n(.,nrow(blogs)*0.05)
+news_sample<-news %>% sample_n(.,nrow(news)*0.05)
+tweets_sample<-tweets %>% sample_n(.,nrow(tweets)*0.05)
+```
+
+## Preprocessing of Data  
+
+### converting into corpus
+```{r}
+library(tm)
+df<-c(blogs_sample,news_sample,tweets_sample)
+dfcorpus<-VCorpus(VectorSource(df))
+```
+
+### preprocessing the corpus
+```{r}
+dfcorpus<-tm_map(dfcorpus,content_transformer(tolower))
+dfcorpus<-tm_map(dfcorpus,removeWords,stopwords("english"))
+dfcorpus<-tm_map(dfcorpus,removeNumbers)
+dfcorpus<-tm_map(dfcorpus,removePunctuation)
+dfcorpus<-tm_map(dfcorpus,stripWhitespace)
+```
+
+### N Gram processing: Top twenty most frequently used words
+```{r}
+dtm<-DocumentTermMatrix(dfcorpus)
+dtm.matrix<-as.matrix(dtm)
+wordcount<-sort(colSums(dtm.matrix),decreasing = TRUE)
+topten<-head(wordcount,20)
+
+library(reshape2)
+library(ggplot2)
+dfplot<-as.data.frame(melt(topten))
+dfplot$word<-dimnames(dfplot)[[1]]
+dfplot$word<-factor(dfplot$word,levels=dfplot$word[order(dfplot$value,decreasing = TRUE)])
+png(file="Figures/unigram.png",height=500,width=700)
+fig <- ggplot(dfplot, aes(x=word, y=value)) + geom_bar(stat="identity",fill="steel blue")
+fig <- fig + xlab("one-gram in Corpus")
+fig <- fig + ylab("Frequency")+theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()
+print(fig)
+```
+
+### N Gram processing: Top twenty most frequently used pair of words
+```{r}
+library(RWeka)
+twogramTokenizer <- function(x) {
+    NGramTokenizer(x, Weka_control(min=2, max=2))
+}
+
+dtm2<-DocumentTermMatrix(dfcorpus,control = list(tokenize=twogramTokenizer))
+dtm2_ns <- removeSparseTerms(dtm2, 0.998)
+dtm2.matrix<-as.matrix(dtm2_ns)
+wordcount<-sort(colSums(dtm2.matrix),decreasing = TRUE)
+topten<-head(wordcount,20)
+
+library(reshape2)
+library(ggplot2)
+dfplot<-as.data.frame(melt(topten))
+dfplot$word<-dimnames(dfplot)[[1]]
+dfplot$word<-factor(dfplot$word,levels=dfplot$word[order(dfplot$value,decreasing = TRUE)])
+png(file="Figures/bigrams.png",height = 500,width = 700)
+fig <- ggplot(dfplot, aes(x=word, y=value)) + geom_bar(stat="identity",fill="steel blue")
+fig <- fig + xlab("Two-grams in Corpus")
+fig <- fig + ylab("Frequency")+theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()
+print(fig)
+dev.off()
+```
+
+### N Gram processing: Top twenty most frequently used triplets of words
+```{r}
+threegramTokenizer <- function(x) {
+    NGramTokenizer(x, Weka_control(min=3, max=3))
+}
+
+dtm3<-DocumentTermMatrix(dfcorpus,control=list(tokenize=threegramTokenizer))
+dtm3_ns <- removeSparseTerms(dtm3, 0.998)
+dtm3.matrix<-as.matrix(dtm3_ns)
+wordcount<-sort(colSums(dtm3.matrix),decreasing = TRUE)
+topten<-head(wordcount,20)
+
+library(reshape2)
+library(ggplot2)
+dfplot<-as.data.frame(melt(topten))
+dfplot$word<-dimnames(dfplot)[[1]]
+dfplot$word<-factor(dfplot$word,levels=dfplot$word[order(dfplot$value,decreasing = TRUE)])
+png(file="Figures/trigram.png",height = 500,width = 700)
+fig <- ggplot(dfplot, aes(x=word, y=value)) + geom_bar(stat="identity",fill="steel blue")
+fig <- fig + xlab("Three-grams in Corpus")
+fig <- fig + ylab("Frequency")+theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()
+print(fig)
+dev.off()
+```
+
+### N Gram processing: Top twenty most frequently used quadruple of words
+```{r}
+quadgramTokenizer <- function(x) {
+    NGramTokenizer(x, Weka_control(min=4, max=4))
+}
+
+dtm4<-DocumentTermMatrix(dfcorpus,control=list(tokenize=quadgramTokenizer))
+dtm4_ns <- removeSparseTerms(dtm4, 0.998)
+dtm4.matrix<-as.matrix(dtm4_ns)
+wordcount<-sort(colSums(dtm4.matrix),decreasing = TRUE)
+topten<-head(wordcount,20)
+
+library(reshape2)
+library(ggplot2)
+dfplot<-as.data.frame(melt(topten))
+dfplot$word<-dimnames(dfplot)[[1]]
+dfplot$word<-factor(dfplot$word,levels=dfplot$word[order(dfplot$value,decreasing = TRUE)])
+png(file="Figures/quadgram.png",height = 500,width = 700)
+fig <- ggplot(dfplot, aes(x=word, y=value)) + geom_bar(stat="identity",fill="steel blue")
+fig <- fig + xlab("Quad-grams in Corpus")
+fig <- fig + ylab("Frequency")+theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()
+print(fig)
+dev.off()
+```
+
+
+## Next Steps  
+This concludes the initial exploratory analysis. The next steps will be to build a predictive algorithm that uses an n-gram model with a frequency lookup similar to the analysis above. This algorithm will then be deployed in a Shiny app and will suggest the most likely next word after a phrase is typed.

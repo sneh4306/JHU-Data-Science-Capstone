@@ -1,0 +1,45 @@
+---
+title: "Next Word Prediction App"
+author: "Sneh Bindesh Chitalia"
+date: "12/07/2020"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Description  
+
+- The app was created using the shiny library in R. 
+- Data is taken from three text files namely - blogs,news and twitter.
+- Only a sample of data is used for training the model.
+- Trade off between the accuracy and speed.
+ 
+- The app is used to predict the next word based on the text in the input box.
+
+## Instructions and functioning of the app
+
+- Enter a word or words in the text box.
+- The predicted next word prints below it in blue.
+- No need to hit enter of submit.
+- A question mark means no prediction, typically due to mis-spelling.
+- When the input textbox is empty, the word with maximum frequency in unigram is predicted.
+- Additional tabs show plots of the top ngrams in the dataset.
+
+## Algorithm used
+
+- The data from the three text files are taken and cleaned.
+- Cleaning includes removal of repeated words, non alphanumeric characters and removal of links.
+- Then data from all three files are combined and ngrams are generated, ngrams upto quadgrams(four words) are generated and saved as RDS file which are further used in the server side of the shiny web app when predicting the next word
+- When the input is entered, based on the length of the input words, the appropriate ngram function is called.
+- if number of words in input are 2, the bigram function is called, similarly, if number of words in input are 3, then trigram function is called or else, the quadgram function is called.
+
+## How each of the Ngram function works
+
+- The predicted word is only affected by the words which occur previously.
+- Thus, we take n-1 previous words for prediction.
+- for example, for quadgram, n=4 so we take the last three words of the input to give the next predicted word.
+- Similarly, for trigram we take last two words of the input and for bigram we take last word of the input.
+
+
