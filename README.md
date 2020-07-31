@@ -20,4 +20,4 @@ Task 3A: Milestone Report <br />
 Task 4: Working toward a Prediction Model. Creating Fast Ngram Files <br />
 Task 05: Prediction Model <br />
 Task 06A: Shiny App Source Code <br />
-Task 07: Slide Presentation <br />
+Task 07: [Slide Presentation](https://github.com/sneh4306/JHU-Data-Science-Capstone/blob/master/Slide_deck.Rmd) <br />
