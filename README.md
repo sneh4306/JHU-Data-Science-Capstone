@@ -16,10 +16,8 @@ Task 7: Slide Deck <br />
 Task 8: Final Project <br />
 
 ## Project Scripts:<br />
-Task 3A: Milestone Report
-Task 4: Working toward a Prediction Model
-Task 04A: Fast Ngram Files
-Task 05: Prediction Model
-Task 06: Shiny App
-Task 06A: Shiny App Source Code
-Task 07: Slide Presentation
+Task 3A: Milestone Report <br />
+Task 4: Working toward a Prediction Model. Creating Fast Ngram Files <br />
+Task 05: Prediction Model <br />
+Task 06A: Shiny App Source Code <br />
+Task 07: Slide Presentation <br />
